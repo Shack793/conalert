@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case wall — ConAlert</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/">
+      <img src="/img/logo.png" alt="ConAlert" class="brand-logo">
+    </a>
+    <nav class="tabs">
+      <a href="/">Home</a>
+      <a href="/cases.html" aria-current="page">Case Wall</a>
+      <a href="/submit.html">Submit a Case</a>
+      <a href="/resources.html">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h1>Case wall</h1>
+    <p class="lede">Every case here was submitted by the person it happened to, checked by an admin, and
+      published with that person's consent. Summaries are written from the evidence provided — see each case's
+      note on what's been verified.</p>
+
+    <div class="callout">
+      A platform being named here reflects a reported, evidence-backed complaint — not a court finding.
+      If you represent a platform listed here and want to respond or dispute a case, contact us
+      (see the footer) and we'll publish your response alongside it.
+    </div>
+
+    <div class="filters" id="filters">
+      <button type="button" data-filter="" aria-pressed="true">All</button>
+      <button type="button" data-filter="casino" aria-pressed="false">Casinos</button>
+      <button type="button" data-filter="exchange" aria-pressed="false">Exchanges</button>
+      <button type="button" data-filter="other" aria-pressed="false">Other</button>
+    </div>
+
+    <div id="case-list">
+      <p class="lede">Loading cases…</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer footer--align-space-between" id="site-footer">
+  <div class="footer-inner">
+    <div class="footer-email"><a id="contact-email" href="mailto:cases@conalert.org">cases@conalert.org</a></div>
+    <div class="footer-social" id="footer-social"></div>
+  </div>
+</footer>
+
+<script src="/js/cases.js"></script>
+<script src="/js/footer.js"></script>
+</body>
+</html>

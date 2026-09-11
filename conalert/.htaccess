@@ -1,0 +1,17 @@
+# Block direct web access to config and internal files.
+<FilesMatch "^(config\.php|config\.example\.php)$">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "\.sql$">
+    Require all denied
+</FilesMatch>
+
+# The includes/ folder only contains function definitions meant to be
+# require_once'd by other PHP files — there's no reason for it to be
+# reachable directly from the web.
+RewriteEngine On
+RewriteCond %{REQUEST_URI} ^/includes/ [NC]
+RewriteRule ^ - [F,L]
+
+Options -Indexes
