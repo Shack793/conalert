@@ -77,7 +77,6 @@ function site_footer(): void {
           <ul>
             <?php if ($email): ?><li><a href="mailto:<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?></a></li><?php endif; ?>
             <?php if ($phone): ?><li><?= htmlspecialchars($phone, ENT_QUOTES, 'UTF-8') ?></li><?php endif; ?>
-            <li><a href="/admin/login.php">Admin login</a></li>
           </ul>
         </div>
       </div>
