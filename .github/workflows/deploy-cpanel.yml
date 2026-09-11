@@ -54,14 +54,9 @@ jobs:
           remote_release="/home/${CPANEL_USER}/${release}"
           archive="$RUNNER_TEMP/conalert-release.tar.gz"
 
-          # The archive contains tracked application files only. Secrets and
-          # runtime data are excluded by .gitignore and the explicit filters.
-          tar --exclude='./.git' \
-              --exclude='./config.php' \
-              --exclude='./admin.zip' \
-              --exclude='./api/error_log' \
-              --exclude='./db/*.sql' \
-                -czf "$archive" .
+          # Export the committed revision directly. This cannot include the
+          # archive itself or observe files changing in the runner workspace.
+          git archive --format=tar.gz --output="$archive" HEAD
 
           "${ssh_cmd[@]}" "$target" "mkdir -p \"$remote_release\" \"/home/${CPANEL_USER}/deploy-backups\""
               scp -P "$CPANEL_SSH_PORT" -i "$HOME/.ssh/deploy_key" -o BatchMode=yes "$archive" "$target:$remote_release/"
