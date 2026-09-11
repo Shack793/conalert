@@ -42,11 +42,12 @@ jobs:
         env:
           CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
           CPANEL_USER: ${{ secrets.CPANEL_USER }}
+          CPANEL_SSH_PORT: ${{ vars.CPANEL_SSH_PORT || '21098' }}
           DEPLOY_PATH: ${{ vars.CPANEL_DEPLOY_PATH || '/home/conapafe/public_html' }}
         run: |
           set -euo pipefail
 
-          ssh_cmd=(ssh -i "$HOME/.ssh/deploy_key" -o BatchMode=yes)
+          ssh_cmd=(ssh -p "$CPANEL_SSH_PORT" -i "$HOME/.ssh/deploy_key" -o BatchMode=yes)
           target="${CPANEL_USER}@${CPANEL_HOST}"
           release="conalert-release-${GITHUB_SHA}"
           backup="conalert-backup-$(date -u +%Y%m%d-%H%M%S)"
@@ -61,7 +62,7 @@ jobs:
               -czf release.tar.gz .
 
           "${ssh_cmd[@]}" "$target" "mkdir -p \"$HOME/$release\" \"$HOME/deploy-backups\""
-          scp -i "$HOME/.ssh/deploy_key" -o BatchMode=yes release.tar.gz "$target:$HOME/$release/"
+          scp -P "$CPANEL_SSH_PORT" -i "$HOME/.ssh/deploy_key" -o BatchMode=yes release.tar.gz "$target:$HOME/$release/"
 
           "${ssh_cmd[@]}" "$target" bash -s -- "$release" "$backup" "$DEPLOY_PATH" <<'REMOTE'
           set -euo pipefail
