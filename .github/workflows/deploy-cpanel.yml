@@ -51,6 +51,7 @@ jobs:
           target="${CPANEL_USER}@${CPANEL_HOST}"
           release="conalert-release-${GITHUB_SHA}"
           backup="conalert-backup-$(date -u +%Y%m%d-%H%M%S)"
+          remote_release="/home/${CPANEL_USER}/${release}"
 
           # The archive contains tracked application files only. Secrets and
           # runtime data are excluded by .gitignore and the explicit filters.
@@ -61,8 +62,8 @@ jobs:
               --exclude='./db/*.sql' \
               -czf release.tar.gz .
 
-          "${ssh_cmd[@]}" "$target" "mkdir -p \"$HOME/$release\" \"$HOME/deploy-backups\""
-          scp -P "$CPANEL_SSH_PORT" -i "$HOME/.ssh/deploy_key" -o BatchMode=yes release.tar.gz "$target:$HOME/$release/"
+          "${ssh_cmd[@]}" "$target" "mkdir -p \"$remote_release\" \"/home/${CPANEL_USER}/deploy-backups\""
+          scp -P "$CPANEL_SSH_PORT" -i "$HOME/.ssh/deploy_key" -o BatchMode=yes release.tar.gz "$target:$remote_release/"
 
           "${ssh_cmd[@]}" "$target" bash -s -- "$release" "$backup" "$DEPLOY_PATH" <<'REMOTE'
           set -euo pipefail
