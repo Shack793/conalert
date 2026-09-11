@@ -96,6 +96,13 @@ nav.tabs a:hover, nav.tabs a[aria-current="page"] {
   background: rgba(255,255,255,0.05);
 }
 
+@media (max-width: 760px) {
+  .header-inner { padding: 0 16px; align-items: flex-start; }
+  .brand { padding: 14px 0 10px; }
+  nav.tabs { width: 100%; flex-wrap: wrap; gap: 0; padding-bottom: 8px; }
+  nav.tabs a { font-size: 0.72rem; padding: 8px 9px; }
+}
+
 /* ---- Layout shells ---- */
 main { max-width: 1040px; margin: 0 auto; padding: 0 24px 80px; }
 .wide { max-width: 1040px; }
@@ -225,7 +232,10 @@ input[type="text"], input[type="email"], input[type="number"], input[type="date"
 textarea { min-height: 140px; resize: vertical; }
 input:focus, select:focus, textarea:focus { border-color: var(--navy); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 640px) { .field-row { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  main { padding-left: 16px; padding-right: 16px; }
+  .field-row { grid-template-columns: 1fr; }
+}
 .checkbox-field { display: flex; gap: 10px; align-items: flex-start; }
 .checkbox-field input { width: auto; margin-top: 4px; }
 .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
