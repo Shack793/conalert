@@ -23,21 +23,85 @@ unchanged.
     locked out even mid-session.
   - Every status/summary/notes change on a case now records *who* made it.
 
+## What's new in THIS update
+
+- **Clickable links everywhere they show up** — evidence links and case
+  descriptions in the admin dashboard are now real hyperlinks, not plain
+  text. Any `http(s)://` URL typed into a case description, public summary,
+  testimonial, or the About page auto-links on display.
+- **Modern footer**, same navy as the header, fully admin-editable from
+  **Site settings**: about blurb, contact email/phone, and social links (X,
+  Facebook, Instagram, TikTok, LinkedIn) — leave any social field blank to
+  hide that icon.
+- **Editable case numbers** — every case now has a `case_number` (defaults
+  to its internal ID, e.g. `14`) that an admin can change to whatever
+  reference scheme you like (e.g. `CA-2026-014`) from the case drawer. The
+  public case wall shows this number, not the raw database ID.
+- **Logo + favicon** — a generated navy/amber "alert" mark ships by default
+  (`assets/logo.svg`, `assets/favicon.ico`, plus PNG sizes and an
+  apple-touch-icon). Replace either one anytime from **Site settings** —
+  SVG, PNG, or ICO, 1MB max.
+- **Paragraphs that actually work** — the root cause of "clumsy" text after
+  submitting was that plain line breaks weren't being turned into real
+  paragraphs on display. Fixed with a small safe text renderer applied to
+  case descriptions, public summaries, testimonials, and the About page:
+  blank line = new paragraph, single line break = line break within a
+  paragraph, plus `**bold**`, `*italic*`, and `~~strikethrough~~`. A small
+  toolbar (B / I / S / Link buttons) is attached to the relevant text boxes
+  so people don't have to remember the syntax.
+- **Testimonials** — a public page (`/testimonials.php`) where people can
+  read approved testimonials and submit their own, a homepage teaser
+  section, and an admin approval queue (`/admin/testimonials.php`, open to
+  both roles) — nothing goes public until an admin approves it.
+- **Editable, togglable About Us page** (`/about.php`) — content is written
+  and edited from **Site settings** using the same rich-text toolbar. A
+  switch there turns the page (and its nav link) on or off entirely, same
+  for the Testimonials page.
+- Public pages moved from static `.html` to `.php` (`index.php`,
+  `submit.php`, `cases.php`, `resources.php`) so they could pull the
+  settings above — same URLs and endpoints otherwise, nothing else about
+  how they work has changed.
+
+### Upgrading an existing ConAlert install
+
+If you already have this running with real data in it:
+
+1. Upload all the new/changed files (everything in this package).
+2. **Delete the old `index.html`, `submit.html`, `cases.html`, and
+   `resources.html`** from your server if they're still there — they've
+   been replaced by the `.php` versions above, and leaving the old ones in
+   place would make both versions reachable side by side.
+3. Run the migration: phpMyAdmin → your database → Import →
+   `db/migrate_v2.sql`. This adds `case_number`, `site_settings`, and
+   `testimonials` without touching your existing cases or admin accounts.
+   (If you're setting ConAlert up fresh, skip this — `db/schema.sql`
+   already includes everything.)
+4. Log in and visit **Site settings** to fill in your real contact info,
+   social links, and About page content — sensible placeholder defaults are
+   shown until you do.
+
 ## What's in the box
 
 ```
-index.html, submit.html, cases.html, resources.html   → public site (unchanged design)
+index.php, submit.php, cases.php, resources.php,      → public site
+about.php, testimonials.php
 css/style.css, js/*.js                                  → shared frontend assets
-api/cases.php, api/stats.php                             → public endpoints
+assets/                                                  → default logo/favicon (admin can replace these)
+uploads/branding/                                        → admin-uploaded logo/favicon land here
+api/cases.php, api/stats.php, api/testimonials.php       → public endpoints
 admin/login.php, admin/logout.php                        → session-based login
 admin/dashboard.php                                       → case queue (admin + staff)
+admin/testimonials.php                                     → testimonial approval queue (admin + staff)
+admin/settings.php                                         → footer/branding/About/toggles (admin only)
 admin/users.php                                            → team login management (admin only)
 admin/api/*.php                                            → the admin JSON endpoints behind those pages
-includes/auth.php, includes/csrf.php, includes/helpers.php → shared PHP logic
+includes/auth.php, includes/csrf.php, includes/helpers.php, → shared PHP logic
+includes/settings.php, includes/site-chrome.php
 db.php, config.example.php                                → database connection + settings
-db/schema.sql                                              → MySQL schema
+db/schema.sql                                              → MySQL schema (fresh installs)
+db/migrate_v2.sql                                          → migration for existing installs
 db/seed.php                                                → one-time setup script (see below)
-.htaccess                                                  → blocks direct access to config.php, includes/, *.sql
+.htaccess, uploads/.htaccess                               → blocks direct access to config.php, includes/, *.sql, and PHP execution inside uploads/
 ```
 
 No build step, no `npm install`, no Node — just upload the files.
@@ -135,8 +199,9 @@ running before you rely on the admin area.
 ## Verifying it all works
 
 - `https://conalert.org/` — homepage with the ledger stat
-- `https://conalert.org/submit.html` — submission form
-- `https://conalert.org/cases.html` — should show the seeded bets.io example
+- `https://conalert.org/submit.php` — submission form
+- `https://conalert.org/cases.php` — should show the seeded bets.io example
+- `https://conalert.org/testimonials.php` and `https://conalert.org/about.php` — if enabled in Site settings
 - `https://conalert.org/admin/login.php` — sign in with the account you created
 - `https://conalert.org/admin/users.php` — (admin accounts only) team login management
 

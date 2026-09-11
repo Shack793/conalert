@@ -30,7 +30,7 @@ function render() {
   }
 
   listEl.innerHTML = filtered.map((c) => `
-    <article class="case-file" data-tab="CASE #${escapeHtml(c.case_number || c.id)}">
+    <article class="case-file" data-tab="CASE #${escapeHtml(String(c.display_number ?? c.id))}">
       <span class="badge ${badgeClass(c.platform_type)}">${c.platform_type}</span>
       <h3>${escapeHtml(c.platform_name)}</h3>
       <div class="case-meta">
@@ -38,8 +38,7 @@ function render() {
         <span>${formatDate(c.incident_date)}</span>
         ${c.country ? `<span>${escapeHtml(c.country)}</span>` : ''}
       </div>
-      <p class="case-summary">${escapeHtml(c.public_summary || 'Summary pending admin review.')}</p>
-      ${c.evidence_links ? `<div class="evidence-links" style="margin-top:10px;font-size:0.85rem">${linkifyEvidenceLinks(c.evidence_links)}</div>` : ''}
+      <div class="case-summary rich-text">${c.public_summary_html || '<p>Summary pending admin review.</p>'}</div>
     </article>
   `).join('');
 }
@@ -48,17 +47,6 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
-}
-
-function linkifyEvidenceLinks(raw){
-  if(!raw || !raw.trim()) return '<em>none provided</em>';
-  return raw.split('\n').map(s=>s.trim()).filter(Boolean).map(url=>{
-    try{
-      const u=new URL(url);
-      if(!['http:','https:'].includes(u.protocol)) throw 0;
-      return `<a href="${escapeHtml(u.href)}" target="_blank" rel="noopener noreferrer nofollow">${escapeHtml(url)}</a>`;
-    }catch{ return escapeHtml(url); }
-  }).join('<br>');
 }
 
 filterButtons.forEach((btn) => {

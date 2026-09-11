@@ -66,9 +66,9 @@ header.site-header {
 }
 .brand {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
-  padding: 12px 0;
+  padding: 18px 0;
   color: var(--paper-raised);
   text-decoration: none;
 }
@@ -80,16 +80,6 @@ header.site-header {
   padding: 2px 6px;
 }
 .brand-name { font-size: 1.25rem; font-weight: 600; }
-.brand-logo {
-  height: 36px;
-  width: auto;
-  display: block;
-  max-width: 180px;
-  object-fit: contain;
-}
-@media (max-width: 640px) {
-  .brand-logo { height: 28px; max-width: 140px; }
-}
 nav.tabs { display: flex; gap: 2px; }
 nav.tabs a {
   font-family: "IBM Plex Mono", monospace;
@@ -265,27 +255,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--navy); }
 .resource-group .res-desc { color: var(--ink-soft); font-size: 0.92rem; }
 
 /* ---- Footer ---- */
-footer.site-footer {
-  background: var(--navy);
-  color: var(--paper-raised);
-  border-top: 4px solid var(--amber);
+footer {
+  border-top: 1px solid var(--rule-strong);
   margin-top: 90px;
-  padding: 22px 24px 28px;
+  padding: 28px 24px 60px;
+  color: var(--ink-soft);
   font-size: 0.85rem;
 }
-footer.site-footer a { color: var(--paper-raised); text-decoration: underline; text-underline-offset: 2px; }
-footer.site-footer a:hover { color: var(--amber-soft); }
-footer .footer-inner { max-width: 1040px; margin: 0 auto; display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
-footer.footer--align-center .footer-inner { justify-content:center; text-align:center; }
-footer.footer--align-left .footer-inner { justify-content:flex-start; }
-footer.footer--align-space-between .footer-inner { justify-content:space-between; }
-.footer-email a { color: inherit; }
-.footer-social { display:flex; gap:14px; align-items:center; }
-.footer-social a { display:inline-flex; width:22px; height:22px; color:var(--paper-raised); text-decoration:none; }
-.footer-social a:hover { color:var(--amber-soft); }
-.footer-social svg { width:22px; height:22px; fill:currentColor; display:block; }
-.evidence-links a { word-break:break-all; text-decoration:underline; }
-.evidence-links a:hover { color:var(--amber); }
+footer .footer-inner { max-width: 1040px; margin: 0 auto; }
 
 /* ---- Admin ---- */
 body.admin { font-family: "IBM Plex Mono", monospace; font-size: 14px; }
@@ -331,6 +308,9 @@ table.user-table th { color: var(--navy); border-bottom: 2px solid var(--navy); 
 .role-pill.admin { border-color: var(--navy); color: var(--navy); }
 .status-pill.active { border-color: var(--green); color: var(--green); }
 .status-pill.revoked { border-color: #a13d2b; color: #a13d2b; }
+.status-pill.approved { border-color: var(--green); color: var(--green); }
+.status-pill.rejected { border-color: #a13d2b; color: #a13d2b; }
+.status-pill.pending { border-color: var(--amber); color: var(--amber); }
 .inline-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .inline-actions button { font-family: "IBM Plex Mono", monospace; font-size: 11px; padding: 4px 8px; border: 1px solid var(--rule-strong); background: none; cursor: pointer; }
 .inline-actions button:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
@@ -346,3 +326,100 @@ table.user-table th { color: var(--navy); border-bottom: 2px solid var(--navy); 
 
 .admin-topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin: 14px 0 6px; font-size: 13px; color: var(--ink-soft); }
 .admin-topbar a { margin-left: 12px; }
+
+/* ---- Markdown toolbar (attached above textareas) ---- */
+.md-toolbar { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+.md-toolbar-btn {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper-raised);
+  cursor: pointer;
+  color: var(--ink);
+}
+.md-toolbar-btn:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+.md-toolbar-btn.is-bold { font-weight: 700; }
+.md-toolbar-btn.is-italic { font-style: italic; }
+.md-toolbar-btn.is-strike { text-decoration: line-through; }
+.md-toolbar-hint { font-size: 11px; color: var(--ink-soft); margin-left: 6px; }
+
+/* ---- Rich text output (renders render_rich_text() HTML) ---- */
+.rich-text p { margin: 0 0 1em; }
+.rich-text p:last-child { margin-bottom: 0; }
+.rich-text a { text-decoration-line: underline; }
+.rich-text strong { color: var(--ink); }
+.rich-text del { color: var(--ink-soft); }
+
+/* ---- Modern footer ---- */
+footer.site-footer {
+  background: var(--navy);
+  color: #cfd3dc;
+  margin-top: 90px;
+  padding: 0;
+  border-top: 4px solid var(--amber);
+}
+.footer-grid {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 48px 24px 28px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 36px;
+}
+@media (max-width: 720px) { .footer-grid { grid-template-columns: 1fr; } }
+.footer-col h4 {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--amber-soft);
+  margin: 0 0 14px;
+  text-transform: uppercase;
+}
+.footer-col p { color: #cfd3dc; font-size: 0.92rem; max-width: 320px; }
+.footer-col ul { list-style: none; padding: 0; margin: 0; }
+.footer-col li { margin-bottom: 8px; font-size: 0.92rem; }
+.footer-col a { color: #cfd3dc; text-decoration: none; }
+.footer-col a:hover { color: var(--amber-soft); text-decoration: underline; }
+.footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.footer-brand img { height: 32px; width: auto; }
+.footer-social { display: flex; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+.footer-social a {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 5px 10px;
+  border-radius: 2px;
+}
+.footer-social a:hover { border-color: var(--amber-soft); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.12);
+  padding: 16px 24px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #9aa1b0;
+}
+.footer-bottom a { color: #9aa1b0; }
+
+/* ---- Testimonials ---- */
+.testimonial-card {
+  background: var(--paper-raised); border: 1px solid var(--rule); border-left: 6px solid var(--green);
+  padding: 20px 22px; margin: 18px 0;
+}
+.testimonial-card .t-name { font-weight: 600; }
+.testimonial-card .t-role { font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 10px; }
+.testimonial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 720px) { .testimonial-grid { grid-template-columns: 1fr; } }
+
+/* ---- Admin settings page ---- */
+.settings-section { margin: 32px 0; padding-top: 24px; border-top: 1px solid var(--rule); }
+.settings-section:first-child { border-top: none; padding-top: 0; }
+.settings-section h2 { font-size: 1.2rem; }
+.toggle-row { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.branding-preview { display: flex; align-items: center; gap: 16px; margin: 12px 0; }
+.branding-preview img { background: var(--navy); padding: 8px; height: 40px; }
+.branding-preview img.fav { height: 32px; width: 32px; padding: 4px; }
+
+/* ---- Pending testimonials queue (admin) ---- */
+.pending-card { background: var(--paper-raised); border: 1px solid var(--rule); padding: 16px 20px; margin: 14px 0; }
+.pending-card .inline-actions { margin-top: 10px; }

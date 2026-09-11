@@ -21,7 +21,8 @@ $token = csrf_token();
 <header class="site-header">
   <div class="header-inner">
     <a class="brand" href="/admin/dashboard.php">
-      <img src="/img/logo.png" alt="ConAlert" class="brand-logo">
+      <span class="brand-mark">ADMIN</span>
+      <span class="brand-name">ConAlert — Team Logins</span>
     </a>
     <nav class="tabs">
       <a href="/admin/dashboard.php">Case queue</a>

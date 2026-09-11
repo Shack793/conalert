@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS admins (
 
 CREATE TABLE IF NOT EXISTS cases (
   id                  INT AUTO_INCREMENT PRIMARY KEY,
-  case_number         VARCHAR(32) NULL UNIQUE,
+  case_number         VARCHAR(50) NULL,      -- admin-editable public reference (e.g. "CA-2026-014"); defaults to id
   created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   status              ENUM('new','in_review','verified','published','resolved','rejected') NOT NULL DEFAULT 'new',
@@ -47,8 +47,7 @@ CREATE TABLE IF NOT EXISTS cases (
 
   INDEX idx_cases_status (status),
   INDEX idx_cases_platform (platform_name),
-  INDEX idx_cases_email (email),
-  INDEX idx_cases_case_number (case_number)
+  INDEX idx_cases_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS case_events (
@@ -61,30 +60,24 @@ CREATE TABLE IF NOT EXISTS case_events (
   FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS settings (
-  `key`       VARCHAR(80) NOT NULL PRIMARY KEY,
-  value       TEXT NULL,
-  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  updated_by  INT NULL,
-  FOREIGN KEY (updated_by) REFERENCES admins(id) ON DELETE SET NULL
+-- Simple key/value store for admin-editable site content: footer contact
+-- info and social links, logo/favicon paths, About Us content + on/off
+-- toggle, and the Testimonials page on/off toggle.
+CREATE TABLE IF NOT EXISTS site_settings (
+  setting_key    VARCHAR(100) PRIMARY KEY,
+  setting_value  TEXT NULL,
+  updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO settings (`key`, value) VALUES
-  ('contact_email','cases@conalert.org'),
-  ('footer_align','space-between')
-ON DUPLICATE KEY UPDATE `key`=`key`;
-
-CREATE TABLE IF NOT EXISTS social_links (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  platform    VARCHAR(40) NOT NULL UNIQUE,
-  label       VARCHAR(80) NULL,
-  url         TEXT NULL,
-  sort_order  INT NOT NULL DEFAULT 0,
-  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  created_by  INT NULL,
-  FOREIGN KEY (created_by) REFERENCES admins(id) ON DELETE SET NULL
+CREATE TABLE IF NOT EXISTS testimonials (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  name            VARCHAR(150) NOT NULL,
+  email           VARCHAR(200) NULL,      -- for admin follow-up only, never shown publicly
+  role_or_context VARCHAR(200) NULL,      -- e.g. "Recovered funds from a frozen exchange account"
+  testimonial     TEXT NOT NULL,
+  status          ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  reviewed_at     DATETIME NULL,
+  reviewed_by     VARCHAR(150) NULL,
+  INDEX idx_testimonials_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT IGNORE INTO social_links (platform, label, url, sort_order) VALUES
-  ('instagram','Instagram','',1),
-  ('twitter','Twitter','',2);

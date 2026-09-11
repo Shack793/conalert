@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/settings.php';
 
 // Already logged in? Skip straight to the dashboard.
 if (current_admin()) {
@@ -31,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin login — ConAlert</title>
+<link rel="icon" href="<?= htmlspecialchars(get_setting('favicon_path'), ENT_QUOTES, 'UTF-8') ?>">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -39,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <header class="site-header">
   <div class="header-inner">
     <a class="brand" href="/">
-      <img src="/img/logo.png" alt="ConAlert" class="brand-logo">
+      <span class="brand-mark">CASE&nbsp;FILE</span>
+      <span class="brand-name">ConAlert</span>
     </a>
   </div>
 </header>

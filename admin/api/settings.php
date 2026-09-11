@@ -3,64 +3,80 @@ require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/../../includes/helpers.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/csrf.php';
+require_once __DIR__ . '/../../includes/settings.php';
 
-$pdo = get_db();
+require_role_api(['admin']);
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    require_role_api(['admin', 'staff']);
-    $settings = [];
-    foreach ($pdo->query('SELECT `key`, value, updated_at FROM settings')->fetchAll() as $r) $settings[$r['key']] = $r;
-    $socials = $pdo->query('SELECT id, platform, label, url, sort_order FROM social_links ORDER BY sort_order ASC, id ASC')->fetchAll();
-    json_response(200, ['settings' => $settings, 'social_links' => $socials]);
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method === 'GET') {
+    json_response(200, get_all_settings());
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
-    $admin = require_role_api(['admin']);
-    if (!verify_csrf_header()) json_response(403, ['error' => 'Invalid CSRF token. Refresh.']);
-    $body = read_json_body();
+if ($method !== 'POST') {
+    json_response(405, ['error' => 'Method not allowed']);
+}
 
-    // contact_email
-    if (array_key_exists('contact_email', $body)) {
-        $email = trim((string)$body['contact_email']);
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) json_response(400, ['error' => 'contact_email must be valid email']);
-        $pdo->prepare('INSERT INTO settings (`key`, value, updated_by) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value=VALUES(value), updated_by=VALUES(updated_by)')->execute(['contact_email', $email, $admin['id']]);
+// File uploads arrive as multipart/form-data, so this endpoint reads
+// $_POST + $_FILES directly rather than a JSON body. The CSRF token comes
+// along as a regular form field in that case.
+$submittedToken = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+start_secure_session();
+if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $submittedToken)) {
+    json_response(403, ['error' => 'Invalid or missing CSRF token. Refresh the page and try again.']);
+}
+
+$textFields = [
+    'footer_about', 'contact_email', 'contact_phone',
+    'social_x', 'social_facebook', 'social_instagram', 'social_tiktok', 'social_linkedin',
+    'about_content',
+];
+foreach ($textFields as $field) {
+    if (isset($_POST[$field])) {
+        set_setting($field, require_str($_POST[$field], 8000));
     }
-    // footer_align
-    if (array_key_exists('footer_align', $body)) {
-        $align = $body['footer_align'];
-        if (!in_array($align, ['left','center','space-between'], true)) json_response(400, ['error' => 'footer_align must be left, center, space-between']);
-        $pdo->prepare('INSERT INTO settings (`key`, value, updated_by) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value=VALUES(value), updated_by=VALUES(updated_by)')->execute(['footer_align', $align, $admin['id']]);
-    }
-    // social_links bulk: array of {id?,platform,label,url,sort_order}
-    if (isset($body['social_links']) && is_array($body['social_links'])) {
-        foreach ($body['social_links'] as $s) {
-            $platform = strtolower(trim($s['platform'] ?? ''));
-            $url = trim($s['url'] ?? '');
-            $label = trim($s['label'] ?? '');
-            $sort = (int)($s['sort_order'] ?? 0);
-            if ($platform === '') continue;
-            if ($url !== '' && !filter_var($url, FILTER_VALIDATE_URL)) json_response(400, ['error' => "Invalid URL for $platform: $url"]);
-            if (!preg_match('/^[a-z0-9-]{2,30}$/', $platform)) json_response(400, ['error' => 'platform 2-30 alphanum/dash']);
-            if (isset($s['id']) && ctype_digit((string)$s['id'])) {
-                $pdo->prepare('UPDATE social_links SET platform=?, label=?, url=?, sort_order=? WHERE id=?')->execute([$platform, $label ?: ucfirst($platform), $url, $sort, (int)$s['id']]);
-            } else {
-                // upsert by platform to avoid duplicate
-                $existing = $pdo->prepare('SELECT id FROM social_links WHERE platform=?');
-                $existing->execute([$platform]);
-                if ($row = $existing->fetch()) {
-                    $pdo->prepare('UPDATE social_links SET label=?, url=?, sort_order=? WHERE id=?')->execute([$label ?: ucfirst($platform), $url, $sort, $row['id']]);
-                } else {
-                    $pdo->prepare('INSERT INTO social_links (platform,label,url,sort_order,created_by) VALUES (?,?,?,?,?)')->execute([$platform, $label ?: ucfirst($platform), $url, $sort, $admin['id']]);
-                }
+}
+
+foreach (['about_enabled', 'testimonials_enabled'] as $toggle) {
+    set_setting($toggle, !empty($_POST[$toggle]) ? '1' : '0');
+}
+
+// --- Branding uploads (optional — only replace if a new file was sent) ---
+$uploadDir = __DIR__ . '/../../uploads/branding/';
+$allowedExtensions = ['svg', 'png', 'ico'];
+
+foreach (['logo' => 'logo_path', 'favicon' => 'favicon_path'] as $inputName => $settingKey) {
+    if (!empty($_FILES[$inputName]['name']) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
+        $tmpPath = $_FILES[$inputName]['tmp_name'];
+        $size = $_FILES[$inputName]['size'];
+        $originalName = $_FILES[$inputName]['name'];
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if ($size > 1024 * 1024) {
+            json_response(400, ['error' => ucfirst($inputName) . ' file is too large (max 1MB).']);
+        }
+        if (!in_array($ext, $allowedExtensions, true)) {
+            json_response(400, ['error' => ucfirst($inputName) . ' must be an .svg, .png, or .ico file.']);
+        }
+        if ($ext === 'svg') {
+            $contents = file_get_contents($tmpPath);
+            if ($contents === false || stripos($contents, '<script') !== false || stripos($contents, 'onload=') !== false) {
+                json_response(400, ['error' => 'That SVG file contains scripting and was rejected for safety. Please use a plain vector export.']);
             }
         }
-    }
 
-    // return fresh
-    $settings = [];
-    foreach ($pdo->query('SELECT `key`, value FROM settings')->fetchAll() as $r) $settings[$r['key']] = $r['value'];
-    $settings['social_links'] = $pdo->query('SELECT id, platform, label, url, sort_order FROM social_links ORDER BY sort_order ASC')->fetchAll();
-    json_response(200, $settings);
+        $filename = $inputName . '-' . time() . '.' . $ext;
+        $destination = $uploadDir . $filename;
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        if (!move_uploaded_file($tmpPath, $destination)) {
+            json_response(500, ['error' => 'Could not save the uploaded ' . $inputName . ' file.']);
+        }
+
+        set_setting($settingKey, '/uploads/branding/' . $filename);
+    }
 }
 
-json_response(405, ['error' => 'Method not allowed']);
+json_response(200, ['message' => 'Settings saved.', 'settings' => get_all_settings()]);

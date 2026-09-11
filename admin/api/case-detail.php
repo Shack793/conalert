@@ -4,6 +4,8 @@ require_once __DIR__ . '/../../includes/helpers.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/csrf.php';
 
+$admin = require_role_api(['admin', 'staff']);
+
 $id = $_GET['id'] ?? '';
 if (!ctype_digit((string)$id)) {
     json_response(400, ['error' => 'Missing or invalid case id.']);
@@ -13,20 +15,12 @@ $id = (int)$id;
 $pdo = get_db();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    require_role_api(['admin', 'staff']);
     get_case($pdo, $id);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
-    $admin = require_role_api(['admin']); // edit: admin only
     if (!verify_csrf_header()) {
         json_response(403, ['error' => 'Invalid or missing CSRF token. Refresh the page and try again.']);
     }
     patch_case($pdo, $id, $admin);
-} elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-    $admin = require_role_api(['admin']); // delete: admin only
-    if (!verify_csrf_header()) {
-        json_response(403, ['error' => 'Invalid or missing CSRF token. Refresh the page and try again.']);
-    }
-    delete_case($pdo, $id, $admin);
 } else {
     json_response(405, ['error' => 'Method not allowed']);
 }
@@ -61,6 +55,16 @@ function patch_case(PDO $pdo, int $id, array $admin): void {
     $sets = [];
     $params = [];
     $events = [];
+
+    if (isset($body['case_number'])) {
+        $caseNumber = trim((string)$body['case_number']);
+        if ($caseNumber === '') {
+            json_response(400, ['error' => 'Case number cannot be blank.']);
+        }
+        $sets[] = 'case_number = ?';
+        $params[] = require_str($caseNumber, 50);
+        $events[] = ['case_number_changed', ($existing['case_number'] ?? $existing['id']) . ' -> ' . $caseNumber];
+    }
 
     if (isset($body['status'])) {
         if (!in_array($body['status'], $statuses, true)) {
@@ -98,26 +102,8 @@ function patch_case(PDO $pdo, int $id, array $admin): void {
         $events[] = ['note_added', 'Admin notes updated'];
     }
 
-    if (isset($body['case_number'])) {
-        $cn = trim((string)$body['case_number']);
-        if ($cn === '') {
-            $sets[] = 'case_number = NULL';
-            $events[] = ['case_number_edited', 'case_number cleared'];
-        } else {
-            if (!preg_match('/^[A-Za-z0-9-]{2,32}$/', $cn)) {
-                json_response(400, ['error' => 'case_number 2-32 chars, letters/numbers/dash only']);
-            }
-            $dup = $pdo->prepare('SELECT id FROM cases WHERE case_number = ? AND id != ?');
-            $dup->execute([$cn, $id]);
-            if ($dup->fetch()) json_response(400, ['error' => 'case_number already in use']);
-            $sets[] = 'case_number = ?';
-            $params[] = $cn;
-            $events[] = ['case_number_edited', "case_number -> $cn"];
-        }
-    }
-
     if (empty($sets)) {
-        json_response(400, ['error' => 'Nothing to update — provide status, priority, public_summary, admin_notes, and/or case_number.']);
+        json_response(400, ['error' => 'Nothing to update — provide status, priority, public_summary, and/or admin_notes.']);
     }
 
     $params[] = $id;
@@ -132,15 +118,4 @@ function patch_case(PDO $pdo, int $id, array $admin): void {
     $refreshed = $pdo->prepare('SELECT * FROM cases WHERE id = ?');
     $refreshed->execute([$id]);
     json_response(200, $refreshed->fetch());
-}
-
-function delete_case(PDO $pdo, int $id, array $admin): void {
-    $stmt = $pdo->prepare('SELECT id FROM cases WHERE id = ?');
-    $stmt->execute([$id]);
-    if (!$stmt->fetch()) {
-        json_response(404, ['error' => 'Case not found.']);
-    }
-    // case_events will cascade delete via FK case_events_ibfk_1 ON DELETE CASCADE
-    $pdo->prepare('DELETE FROM cases WHERE id = ?')->execute([$id]);
-    json_response(200, ['message' => "Case #$id deleted.", 'id' => $id]);
 }

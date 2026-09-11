@@ -1,0 +1,119 @@
+<?php
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/includes/settings.php';
+require_once __DIR__ . '/includes/site-chrome.php';
+$favicon = htmlspecialchars(get_setting('favicon_path'), ENT_QUOTES, 'UTF-8');
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resources — ConAlert</title>
+<link rel="icon" href="<?= $favicon ?>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<?php site_header('resources'); ?>
+
+<main>
+  <section>
+    <h1>Where recovered money actually comes from</h1>
+    <p class="lede">Public pressure can get a platform to act faster, but the channels below are what actually
+      have the power to reverse a payment, freeze a platform's accounts, or force disclosure. File with the
+      relevant ones for your situation <em>in addition to</em> submitting a case here.</p>
+    <div class="callout">
+      This is a general starting-point list, not legal advice, and coverage varies a lot by country and by how
+      you paid. If a large amount is involved, a consultation with a consumer-protection or fraud lawyer in your
+      country is worth the cost.
+    </div>
+  </section>
+
+  <section>
+    <div class="resource-group">
+      <h3>If you paid by card or bank transfer</h3>
+      <ul>
+        <li>
+          <div class="res-name">Card network chargeback (Visa / Mastercard dispute)</div>
+          <div class="res-desc">Contact your card issuer directly — most allow disputes for goods/services
+            not received or account access denied within 120 days of the transaction. Keep your evidence
+            organized before you call.</div>
+        </li>
+        <li>
+          <div class="res-name">Your bank's fraud department</div>
+          <div class="res-desc">For bank transfers, ask specifically about a "recall" or "indemnity claim" —
+            terminology varies by country and bank.</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="resource-group">
+      <h3>If you paid or were paid in crypto</h3>
+      <ul>
+        <li>
+          <div class="res-name">The exchange's own compliance / AML team</div>
+          <div class="res-desc">A formal written complaint (not just live chat) citing specific transaction
+            hashes creates a paper trail and is often what internal escalation actually needs.</div>
+        </li>
+        <li>
+          <div class="res-name">Blockchain analysis / tracing</div>
+          <div class="res-desc">If funds moved on-chain after being frozen or withdrawn without your
+            authorization, a tracing report can support a law-enforcement report.</div>
+        </li>
+        <li>
+          <div class="res-name">Chainabuse.com</div>
+          <div class="res-desc">A free, community-run registry for reporting crypto addresses and services
+            tied to scams — useful for building a public record and for exchanges that check it before onboarding.</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="resource-group">
+      <h3>Government and regulatory bodies</h3>
+      <ul>
+        <li>
+          <div class="res-name">United States — IC3 (FBI Internet Crime Complaint Center)</div>
+          <div class="res-desc">ic3.gov — file for any online fraud, including crypto and gambling platforms. Also consider the FTC (reportfraud.ftc.gov) and, for licensed exchanges, FinCEN.</div>
+        </li>
+        <li>
+          <div class="res-name">United Kingdom — Action Fraud</div>
+          <div class="res-desc">actionfraud.police.uk — the UK's national fraud reporting service; also notify the FCA if the platform claims UK authorization.</div>
+        </li>
+        <li>
+          <div class="res-name">European Union</div>
+          <div class="res-desc">Report to your national financial regulator and consumer-protection authority; the European Consumer Centre network (ECC-Net) can help with cross-border cases.</div>
+        </li>
+        <li>
+          <div class="res-name">Elsewhere</div>
+          <div class="res-desc">Search "[your country] cybercrime unit" or "[your country] financial regulator complaint" — most countries have a dedicated online reporting portal. Tell us your country when you submit a case and we'll try to point you to the right one.</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="resource-group">
+      <h3>Public pressure channels</h3>
+      <ul>
+        <li>
+          <div class="res-name">Trustpilot / platform-specific review sites</div>
+          <div class="res-desc">A detailed, factual review (dates, amounts, what support said) is often the fastest thing a platform's support team actually reacts to.</div>
+        </li>
+        <li>
+          <div class="res-name">Relevant subreddits</div>
+          <div class="res-desc">e.g. r/CryptoCurrency, r/Scams, r/Bitcoin, or a platform-specific community — post facts and evidence, not accusations you can't back up.</div>
+        </li>
+        <li>
+          <div class="res-name">X and TikTok</div>
+          <div class="res-desc">Tagging the platform's official account directly, with screenshots, tends to get faster responses than a support ticket alone.</div>
+        </li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<?php site_footer(); ?>
+
+</body>
+</html>

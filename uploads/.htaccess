@@ -1,0 +1,6 @@
+# Uploaded branding files are only ever .svg/.png/.ico (enforced by
+# admin/api/settings.php), but disable PHP execution here anyway in case
+# that ever changes.
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>

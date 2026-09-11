@@ -15,7 +15,7 @@ if ($method === 'GET') {
 function list_cases(): void {
     $pdo = get_db();
     $sql = "SELECT id, case_number, created_at, country, platform_name, platform_type,
-                   amount_usd, currency_lost, incident_date, public_summary, evidence_links
+                   amount_usd, currency_lost, incident_date, public_summary
             FROM cases
             WHERE status = 'published' AND consent_to_publish = 1";
     $params = [];
@@ -36,7 +36,20 @@ function list_cases(): void {
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    json_response(200, $stmt->fetchAll());
+    $rows = $stmt->fetchAll();
+
+    // Pre-render the summary server-side (paragraphs, bold/italic/strike,
+    // clickable links) so the frontend can drop it straight into the page
+    // without re-implementing Markdown-ish parsing in JavaScript.
+    foreach ($rows as &$row) {
+        $row['public_summary_html'] = render_rich_text($row['public_summary'] ?? '');
+        $row['display_number'] = $row['case_number'] !== null && $row['case_number'] !== ''
+            ? $row['case_number']
+            : $row['id'];
+    }
+    unset($row);
+
+    json_response(200, $rows);
 }
 
 function submit_case(): void {
@@ -120,6 +133,10 @@ function submit_case(): void {
     ]);
 
     $caseId = (int)$pdo->lastInsertId();
+
+    // Default the admin-editable case number to the internal id — an admin
+    // can change it later (e.g. to "CA-2026-014") from the dashboard.
+    $pdo->prepare('UPDATE cases SET case_number = ? WHERE id = ?')->execute([(string)$caseId, $caseId]);
 
     $event = $pdo->prepare("INSERT INTO case_events (case_id, event_type, detail) VALUES (?, 'submitted', ?)");
     $event->execute([$caseId, $honeypotTripped ? 'Flagged by honeypot field' : 'Public submission received']);

@@ -1,6 +1,4 @@
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-const adminRole = document.querySelector('meta[name="admin-role"]')?.content || 'staff';
-const isAdmin = adminRole === 'admin';
 
 const rowsEl = document.getElementById('case-rows');
 const summaryEl = document.getElementById('summary');
@@ -22,16 +20,22 @@ function esc(str) {
   return div.innerHTML;
 }
 
-function linkifyEvidenceLinks(raw){
-  if(!raw || !raw.trim()) return '<em>none provided</em>';
-  return raw.split('\n').map(s=>s.trim()).filter(Boolean).map(url=>{
-    try{
-      const u=new URL(url);
-      if(!['http:','https:'].includes(u.protocol)) throw 0;
-      return `<a href="${esc(u.href)}" target="_blank" rel="noopener noreferrer nofollow">${esc(url)}</a>`;
-    }catch{ return esc(url); }
-  }).join('<br>');
+// Turns already-escaped text into clickable links + <br> line breaks, for
+// read-only display of reporter-submitted text (description, evidence links).
+function linkifyEscaped(escapedText) {
+  return escapedText
+    .replace(/(https?:\/\/[^\s<]+)/gi, (match) => {
+      let url = match;
+      let trail = '';
+      while (url && '.,!?)'.includes(url.slice(-1))) {
+        trail = url.slice(-1) + trail;
+        url = url.slice(0, -1);
+      }
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>${trail}`;
+    })
+    .replace(/\n/g, '<br>');
 }
+
 
 async function apiFetch(url, options = {}) {
   const res = await fetch(url, {
@@ -101,31 +105,22 @@ async function openDrawer(id) {
   const res = await apiFetch(`/admin/api/case-detail.php?id=${id}`);
   const c = await res.json();
 
-  const displayNum = esc(c.case_number || c.id);
-  document.getElementById('drawer-title').textContent = `Case #${displayNum} — ${c.platform_name}`;
+  document.getElementById('drawer-title').textContent = `Case #${c.case_number || c.id} — ${c.platform_name}`;
   document.getElementById('drawer-readonly').innerHTML = `
+    <p><strong>Internal ID:</strong> ${c.id}</p>
     <p><strong>Reporter:</strong> ${esc(c.full_name)} — ${esc(c.email)}${c.country ? ' · ' + esc(c.country) : ''}</p>
     <p><strong>Amount:</strong> ${formatUSD(c.amount_usd)} ${esc(c.currency_lost || '')} &nbsp;
        <strong>Incident date:</strong> ${esc(c.incident_date || 'not given')}</p>
     <p><strong>Consent to publish:</strong> ${Number(c.consent_to_publish) ? 'yes' : 'no'}</p>
-    <p><strong>Description:</strong><br>${esc(c.description).replace(/\n/g, '<br>')}</p>
-    <p><strong>Evidence links:</strong><br><span class="evidence-links">${linkifyEvidenceLinks(c.evidence_links)}</span></p>
+    <p><strong>Description:</strong><br>${linkifyEscaped(esc(c.description))}</p>
+    <p><strong>Evidence links:</strong><br>${linkifyEscaped(esc(c.evidence_links || 'none provided'))}</p>
   `;
+  document.getElementById('drawer-case-number').value = c.case_number || c.id;
   document.getElementById('drawer-status').value = c.status;
   document.getElementById('drawer-priority').value = c.priority;
   document.getElementById('drawer-summary').value = c.public_summary || '';
   document.getElementById('drawer-notes').value = c.admin_notes || '';
-  document.getElementById('drawer-case-number').value = c.case_number || '';
-  // role-based edit controls
-  const canEdit = isAdmin;
-  ['drawer-case-number','drawer-status','drawer-priority','drawer-summary','drawer-notes'].forEach(id => {
-    document.getElementById(id).disabled = !canEdit;
-  });
-  document.getElementById('drawer-save').style.display = canEdit ? '' : 'none';
-  document.getElementById('drawer-delete').style.display = canEdit ? '' : 'none';
-  document.getElementById('staff-notice').style.display = canEdit ? 'none' : 'block';
   document.getElementById('drawer-message').className = 'form-message';
-  document.getElementById('drawer-message').textContent = canEdit ? '' : 'View-only: staff cannot edit or delete.';
   document.getElementById('drawer-events').innerHTML = (c.events || []).map((e) => `
     <li>${new Date(e.created_at).toLocaleString()} — ${esc(e.event_type)}: ${esc(e.detail || '')}${e.actor ? ' (' + esc(e.actor) + ')' : ''}</li>
   `).join('') || '<li>No events yet.</li>';
@@ -140,10 +135,9 @@ document.getElementById('drawer-close').addEventListener('click', () => {
 });
 
 document.getElementById('drawer-save').addEventListener('click', async () => {
-  if (!isAdmin) return;
   const msg = document.getElementById('drawer-message');
   const payload = {
-    case_number: document.getElementById('drawer-case-number').value.trim(),
+    case_number: document.getElementById('drawer-case-number').value,
     status: document.getElementById('drawer-status').value,
     priority: document.getElementById('drawer-priority').value,
     public_summary: document.getElementById('drawer-summary').value,
@@ -168,29 +162,6 @@ document.getElementById('drawer-save').addEventListener('click', async () => {
   loadSummary();
   loadCases();
   openDrawer(openCaseId); // refresh event log
-});
-
-document.getElementById('drawer-delete').addEventListener('click', async () => {
-  if (!isAdmin) return;
-  if (!openCaseId) return;
-  if (!confirm(`Delete case #${openCaseId}? This cannot be undone.`)) return;
-  const msg = document.getElementById('drawer-message');
-  const res = await apiFetch(`/admin/api/case-detail.php?id=${openCaseId}`, {
-    method: 'DELETE'
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    msg.textContent = data.error;
-    msg.className = 'form-message error';
-    return;
-  }
-  msg.textContent = data.message;
-  msg.className = 'form-message success';
-  drawer.classList.remove('open');
-  drawer.setAttribute('aria-hidden', 'true');
-  openCaseId = null;
-  loadSummary();
-  loadCases();
 });
 
 // ---- Change my password ----
@@ -227,6 +198,9 @@ document.getElementById('password-save').addEventListener('click', async () => {
   msg.textContent = data.message;
   msg.className = 'form-message success';
 });
+
+attachMarkdownToolbar(document.getElementById('drawer-summary'), { hint: 'Shown publicly if this case is published.' });
+attachMarkdownToolbar(document.getElementById('drawer-notes'), { hint: 'Private — never shown publicly.' });
 
 loadSummary();
 loadCases();

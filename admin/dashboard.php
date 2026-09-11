@@ -12,7 +12,6 @@ $token = csrf_token();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
-<meta name="admin-role" content="<?= htmlspecialchars($admin['role'], ENT_QUOTES, 'UTF-8') ?>">
 <title>Admin — ConAlert</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
@@ -22,13 +21,15 @@ $token = csrf_token();
 <header class="site-header">
   <div class="header-inner">
     <a class="brand" href="/admin/dashboard.php">
-      <img src="/img/logo.png" alt="ConAlert" class="brand-logo">
+      <span class="brand-mark">ADMIN</span>
+      <span class="brand-name">ConAlert — Case Queue</span>
     </a>
     <nav class="tabs">
       <a href="/" target="_blank">View public site ↗</a>
+      <a href="/admin/testimonials.php">Testimonials</a>
       <?php if ($admin['role'] === 'admin'): ?>
+        <a href="/admin/settings.php">Site settings</a>
         <a href="/admin/users.php">Team logins</a>
-        <a href="/admin/settings.php">Settings</a>
       <?php endif; ?>
     </nav>
   </div>
@@ -59,7 +60,7 @@ $token = csrf_token();
   <table class="case-table">
     <thead>
       <tr>
-        <th>ID</th><th>Received</th><th>Platform</th><th>Type</th><th>Amount</th><th>Reporter</th><th>Status</th><th>Priority</th>
+        <th>Case #</th><th>Received</th><th>Platform</th><th>Type</th><th>Amount</th><th>Reporter</th><th>Status</th><th>Priority</th>
       </tr>
     </thead>
     <tbody id="case-rows">
@@ -74,8 +75,8 @@ $token = csrf_token();
 
   <div id="drawer-readonly"></div>
 
-  <label for="drawer-case-number">Case number (editable, e.g. Case #1)</label>
-  <input type="text" id="drawer-case-number" placeholder="e.g. 1 or CA-2026-001">
+  <label for="drawer-case-number">Case number (shown publicly on the case wall)</label>
+  <input type="text" id="drawer-case-number" maxlength="50">
 
   <label for="drawer-status">Status</label>
   <select id="drawer-status">
@@ -100,11 +101,7 @@ $token = csrf_token();
   <label for="drawer-notes">Admin notes (private, never public)</label>
   <textarea id="drawer-notes" placeholder="Follow-up needed, evidence quality, correspondence with the platform, etc."></textarea>
 
-  <div id="admin-actions">
-    <button class="btn btn-primary save-btn" id="drawer-save">Save changes</button>
-    <button class="btn btn-danger" id="drawer-delete" style="background:#c0392b;color:#fff;margin-left:8px;">Delete case</button>
-  </div>
-  <p id="staff-notice" style="display:none;color:#666;font-size:13px;margin-top:8px;">Staff accounts have read-only access — only admins can edit or delete cases.</p>
+  <button class="btn btn-primary save-btn" id="drawer-save">Save changes</button>
   <div class="form-message" id="drawer-message"></div>
 
   <div class="event-log">
@@ -124,6 +121,7 @@ $token = csrf_token();
   <div class="form-message" id="password-message"></div>
 </div>
 
+<script src="/js/markdown-toolbar.js"></script>
 <script src="/js/admin-dashboard.js"></script>
 </body>
 </html>
