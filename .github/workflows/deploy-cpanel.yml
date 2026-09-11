@@ -68,7 +68,7 @@ jobs:
 
           mkdir -p "$HOME/deploy-backups/$backup"
           cp -a "$app"/. "$HOME/deploy-backups/$backup"/
-          tar -xzf "$HOME/$release/release.tar.gz" -C "$HOME/$release"
+          tar -xzf "$HOME/$release/conalert-release.tar.gz" -C "$HOME/$release"
 
           # Preserve production configuration and runtime uploads. Do not run
           # database migrations as part of a code deployment.
