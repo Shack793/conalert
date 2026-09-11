@@ -28,13 +28,12 @@ jobs:
         shell: bash
         env:
           CPANEL_SSH_KEY: ${{ secrets.CPANEL_SSH_KEY }}
-          CPANEL_KNOWN_HOSTS: ${{ secrets.CPANEL_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
           install -d -m 700 "$HOME/.ssh"
           printf '%s\n' "$CPANEL_SSH_KEY" > "$HOME/.ssh/deploy_key"
           chmod 600 "$HOME/.ssh/deploy_key"
-          printf '%s\n' "$CPANEL_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          cp .github/deploy/cpanel-known_hosts "$HOME/.ssh/known_hosts"
           chmod 644 "$HOME/.ssh/known_hosts"
 
       - name: Upload and activate release
@@ -47,7 +46,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          ssh_cmd=(ssh -p "$CPANEL_SSH_PORT" -i "$HOME/.ssh/deploy_key" -o BatchMode=yes)
+          ssh_cmd=(ssh -p "$CPANEL_SSH_PORT" -i "$HOME/.ssh/deploy_key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts")
           target="${CPANEL_USER}@${CPANEL_HOST}"
           release="conalert-release-${GITHUB_SHA}"
           backup="conalert-backup-$(date -u +%Y%m%d-%H%M%S)"
@@ -59,7 +58,7 @@ jobs:
           git archive --format=tar.gz --output="$archive" HEAD
 
           "${ssh_cmd[@]}" "$target" "mkdir -p \"$remote_release\" \"/home/${CPANEL_USER}/deploy-backups\""
-              scp -P "$CPANEL_SSH_PORT" -i "$HOME/.ssh/deploy_key" -o BatchMode=yes "$archive" "$target:$remote_release/"
+              scp -P "$CPANEL_SSH_PORT" -i "$HOME/.ssh/deploy_key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" "$archive" "$target:$remote_release/"
 
           "${ssh_cmd[@]}" "$target" bash -s -- "$release" "$backup" "$DEPLOY_PATH" <<'REMOTE'
           set -euo pipefail

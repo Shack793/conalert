@@ -140,7 +140,8 @@ In GitHub, open **Settings → Secrets and variables → Actions** and add:
 - `CPANEL_USER`: `conapafe`
 - `CPANEL_SSH_KEY`: a dedicated SSH private key whose public key is enabled
   in cPanel **SSH Access**
-- `CPANEL_KNOWN_HOSTS`: output of `ssh-keyscan -H your-hostname`
+- The cPanel host keys are stored in `.github/deploy/cpanel-known_hosts`.
+  Update that tracked file if the hosting provider changes the server keys.
 
 The workflow assumes the document root is `/home/conapafe/public_html` and
 that the cPanel account has SSH, `rsync`, and `tar`. Change `DEPLOY_PATH` in
