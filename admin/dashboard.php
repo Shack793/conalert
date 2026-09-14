@@ -57,16 +57,18 @@ $token = csrf_token();
     <button type="button" data-status="rejected" aria-pressed="false">Rejected</button>
   </div>
 
-  <table class="case-table">
-    <thead>
-      <tr>
-        <th>Case #</th><th>Received</th><th>Platform</th><th>Type</th><th>Amount</th><th>Reporter</th><th>Status</th><th>Priority</th>
-      </tr>
-    </thead>
-    <tbody id="case-rows">
-      <tr><td colspan="8">Loading…</td></tr>
-    </tbody>
-  </table>
+  <div class="table-scroll">
+    <table class="case-table">
+      <thead>
+        <tr>
+          <th>Case #</th><th>Received</th><th>Platform</th><th>Type</th><th>Amount</th><th>Reporter</th><th>Status</th><th>Priority</th>
+        </tr>
+      </thead>
+      <tbody id="case-rows">
+        <tr><td colspan="8">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
 </main>
 
 <div class="drawer" id="drawer" aria-hidden="true">

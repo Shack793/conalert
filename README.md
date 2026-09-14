@@ -128,27 +128,6 @@ Via cPanel **File Manager** (or FTP/SFTP) upload everything in this project
 into your domain's document root — usually `public_html/` if this is your
 primary domain, or `public_html/conalert.org/` if it's an addon domain.
 
-### Optional: deploy automatically with GitHub Actions
-
-The repository includes `.github/workflows/deploy-cpanel.yml`. It deploys
-tracked files to cPanel after pushes to `main`, preserves the production
-`config.php` and `uploads/` directory, and creates a dated server backup.
-
-In GitHub, open **Settings → Secrets and variables → Actions** and add:
-
-- `CPANEL_HOST`: your cPanel SSH hostname
-- `CPANEL_USER`: `conapafe`
-- `CPANEL_SSH_KEY`: a dedicated SSH private key whose public key is enabled
-  in cPanel **SSH Access**
-- The cPanel host keys are stored in `.github/deploy/cpanel-known_hosts`.
-  Update that tracked file if the hosting provider changes the server keys.
-
-The workflow assumes the document root is `/home/conapafe/public_html` and
-that the cPanel account has SSH, `rsync`, and `tar`. Change `DEPLOY_PATH` in
-the workflow if the domain uses another document root. Database migrations
-are intentionally manual; back up the database and run `db/migrate_v2.sql`
-from cPanel Terminal or phpMyAdmin after reviewing it.
-
 ## 4. Configure the app
 
 Rename `config.example.php` to `config.php` (don't leave the example one

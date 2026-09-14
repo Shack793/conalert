@@ -80,7 +80,7 @@ header.site-header {
   padding: 2px 6px;
 }
 .brand-name { font-size: 1.25rem; font-weight: 600; }
-nav.tabs { display: flex; gap: 2px; }
+nav.tabs { display: flex; flex-wrap: wrap; gap: 2px; }
 nav.tabs a {
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.8rem;
@@ -94,13 +94,6 @@ nav.tabs a:hover, nav.tabs a[aria-current="page"] {
   border-top-color: var(--amber);
   color: #fff;
   background: rgba(255,255,255,0.05);
-}
-
-@media (max-width: 760px) {
-  .header-inner { padding: 0 16px; align-items: flex-start; }
-  .brand { padding: 14px 0 10px; }
-  nav.tabs { width: 100%; flex-wrap: wrap; gap: 0; padding-bottom: 8px; }
-  nav.tabs a { font-size: 0.72rem; padding: 8px 9px; }
 }
 
 /* ---- Layout shells ---- */
@@ -232,10 +225,7 @@ input[type="text"], input[type="email"], input[type="number"], input[type="date"
 textarea { min-height: 140px; resize: vertical; }
 input:focus, select:focus, textarea:focus { border-color: var(--navy); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 640px) {
-  main { padding-left: 16px; padding-right: 16px; }
-  .field-row { grid-template-columns: 1fr; }
-}
+@media (max-width: 640px) { .field-row { grid-template-columns: 1fr; } }
 .checkbox-field { display: flex; gap: 10px; align-items: flex-start; }
 .checkbox-field input { width: auto; margin-top: 4px; }
 .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
@@ -286,12 +276,23 @@ table.case-table th { color: var(--navy); border-bottom: 2px solid var(--navy); 
 table.case-table tr:hover { background: var(--paper-raised); cursor: pointer; }
 .status-pill { padding: 2px 8px; border: 1px solid var(--rule-strong); font-size: 11px; }
 
+/* Tables don't reflow well at phone widths — let them scroll horizontally
+   inside their own box instead of forcing the whole page to scroll. */
+.table-scroll, .user-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll table, .user-table-wrap table { min-width: 640px; }
+
 .drawer {
-  position: fixed; top: 0; right: 0; height: 100%; width: min(480px, 100%);
+  position: fixed; top: 0; right: 0; height: 100%; width: 100%;
   background: var(--paper); border-left: 2px solid var(--navy);
   padding: 24px; overflow-y: auto; transform: translateX(100%);
   transition: transform 0.2s ease;
   box-shadow: -8px 0 24px rgba(0,0,0,0.15);
+}
+@media (min-width: 540px) {
+  .drawer { width: 480px; }
 }
 .drawer.open { transform: translateX(0); }
 .drawer h2 { font-size: 1.1rem; }
@@ -433,3 +434,68 @@ footer.site-footer {
 /* ---- Pending testimonials queue (admin) ---- */
 .pending-card { background: var(--paper-raised); border: 1px solid var(--rule); padding: 16px 20px; margin: 14px 0; }
 .pending-card .inline-actions { margin-top: 10px; }
+
+/* ==========================================================================
+   Mobile responsiveness (phones — iOS and Android alike, roughly ≤ 640px,
+   with an extra tightening pass below ≤ 400px for the smallest devices)
+   ========================================================================== */
+
+/* Safety net: nothing on the page should be able to force horizontal
+   scrolling of the whole document. Elements that genuinely need to scroll
+   sideways (tables) opt back in locally via .table-scroll / .user-table-wrap. */
+html, body { max-width: 100%; overflow-x: hidden; }
+img, svg { max-width: 100%; }
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+
+  h1 { font-size: 1.9rem; }
+  h2 { font-size: 1.35rem; }
+  h3 { font-size: 1.05rem; }
+  .lede { font-size: 1.05rem; }
+
+  main { padding: 0 16px 56px; }
+  section { margin-top: 40px; }
+  section:first-of-type { margin-top: 28px; }
+
+  .header-inner { padding: 0 16px; }
+  .brand { padding: 14px 0; }
+  .brand img { height: 28px !important; }
+  nav.tabs { gap: 0; width: 100%; justify-content: flex-start; }
+  nav.tabs a { padding: 8px 10px; font-size: 0.74rem; }
+
+  .ledger-strip { padding: 18px 18px; gap: 20px; }
+  .ledger-item .stat-value { font-size: 1.5rem; }
+
+  .btn-row { gap: 10px; }
+  .btn { padding: 10px 16px; font-size: 0.85rem; }
+
+  .case-file { padding: 20px 16px 18px; }
+  .case-file::before { left: 12px; }
+
+  .callout { padding: 16px 16px; }
+
+  .steps li { grid-template-columns: 28px 1fr; gap: 12px; }
+
+  /* Footer */
+  .footer-grid { padding: 36px 16px 20px; gap: 28px; }
+  .footer-bottom { padding: 14px 16px; }
+
+  /* Admin chrome */
+  body.admin { font-size: 13px; }
+  .admin-topbar { font-size: 12px; }
+  .drawer { padding: 18px; }
+
+  /* Login card */
+  .login-shell { margin: 40px auto; padding: 0 16px; }
+  .login-card { padding: 24px 20px; }
+
+  /* Settings page branding preview shouldn't force overflow */
+  .branding-preview { flex-wrap: wrap; }
+}
+
+@media (max-width: 400px) {
+  nav.tabs a { padding: 7px 8px; font-size: 0.7rem; }
+  .ledger-strip { flex-direction: column; gap: 14px; }
+  .field-row { gap: 12px; }
+}

@@ -22,6 +22,15 @@ $favicon = htmlspecialchars(get_setting('favicon_path'), ENT_QUOTES, 'UTF-8');
 <main>
   <section>
     <h1>Tell us what happened</h1>
+    <p class="lede">Be as specific as you can — exact amounts, dates, ticket numbers, and links to any evidence
+      (screenshots, transaction hashes, support chat exports). An admin reviews every submission by hand and
+      will follow up by email if we need more.</p>
+
+    <div class="callout">
+      <strong>Before you submit:</strong> save your own copies of everything — screenshots, transaction hashes,
+      support ticket numbers, chat logs. Platforms sometimes edit or delete support threads after a dispute
+      becomes public.
+    </div>
 
     <form class="case-form" id="case-form" novalidate>
       <div class="honeypot" aria-hidden="true">
@@ -37,18 +46,19 @@ $favicon = htmlspecialchars(get_setting('favicon_path'), ENT_QUOTES, 'UTF-8');
         <div class="field">
           <label class="field-label" for="email">Your email *</label>
           <input type="email" id="email" name="email" required>
+          <p class="field-hint">We only use this to follow up on your case — never shown publicly.</p>
         </div>
       </div>
 
       <div class="field">
         <label class="field-label" for="country">Your country</label>
-        <input type="text" id="country" name="country">
+        <input type="text" id="country" name="country" placeholder="e.g. Ghana">
       </div>
 
       <div class="field-row">
         <div class="field">
           <label class="field-label" for="platform_name">Platform name *</label>
-          <input type="text" id="platform_name" name="platform_name" required>
+          <input type="text" id="platform_name" name="platform_name" placeholder="e.g. bets.io" required>
         </div>
         <div class="field">
           <label class="field-label" for="platform_type">Platform type *</label>
@@ -64,11 +74,11 @@ $favicon = htmlspecialchars(get_setting('favicon_path'), ENT_QUOTES, 'UTF-8');
       <div class="field-row">
         <div class="field">
           <label class="field-label" for="amount_usd">Amount frozen / lost (USD equivalent)</label>
-          <input type="number" id="amount_usd" name="amount_usd" min="0" step="0.01">
+          <input type="number" id="amount_usd" name="amount_usd" min="0" step="0.01" placeholder="14000">
         </div>
         <div class="field">
           <label class="field-label" for="currency_lost">Original currency</label>
-          <input type="text" id="currency_lost" name="currency_lost">
+          <input type="text" id="currency_lost" name="currency_lost" placeholder="e.g. USDT, BTC, USD">
         </div>
       </div>
 
@@ -79,12 +89,15 @@ $favicon = htmlspecialchars(get_setting('favicon_path'), ENT_QUOTES, 'UTF-8');
 
       <div class="field">
         <label class="field-label" for="description">What happened *</label>
-        <textarea id="description" name="description" required></textarea>
+        <textarea id="description" name="description" required
+          placeholder="Walk through the timeline: when you deposited, when you tried to withdraw, what the platform said, what support tickets you filed, and what response (if any) you got.
+
+Leave a blank line between paragraphs — it'll display properly once reviewed."></textarea>
       </div>
 
       <div class="field">
         <label class="field-label" for="evidence_links">Links to evidence</label>
-        <textarea id="evidence_links" name="evidence_links"></textarea>
+        <textarea id="evidence_links" name="evidence_links" placeholder="One link per line: screenshots (e.g. Imgur), transaction hash on a block explorer, support ticket thread, etc."></textarea>
       </div>
 
       <div class="field checkbox-field">
@@ -105,7 +118,9 @@ $favicon = htmlspecialchars(get_setting('favicon_path'), ENT_QUOTES, 'UTF-8');
 
 <script src="/js/markdown-toolbar.js"></script>
 <script>
-  attachMarkdownToolbar(document.getElementById('description'), { hint: false });
+  attachMarkdownToolbar(document.getElementById('description'), {
+    hint: 'Leave a blank line between paragraphs. Bold/italic/strikethrough supported.'
+  });
 </script>
 <script src="/js/submit.js"></script>
 </body>
