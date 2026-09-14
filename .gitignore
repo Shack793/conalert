@@ -1,0 +1,15 @@
+# Local secrets and environment-specific configuration
+config.php
+.env
+.env.*
+
+# Runtime-generated uploads; keep the directory protection file tracked
+uploads/branding/*
+!uploads/branding/.htaccess
+
+# Local development and editor files
+.idea/
+.vscode/
+*.log
+Thumbs.db
+Desktop.ini
