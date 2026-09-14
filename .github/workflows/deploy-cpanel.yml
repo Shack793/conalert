@@ -77,7 +77,8 @@ jobs:
             --exclude='uploads/' \
             --exclude='admin.zip' \
             --exclude='api/error_log' \
-            --exclude='db/*.sql' \
+            --exclude='db/*dump*.sql' \
+            --exclude='db/schema*.sql' \
             --exclude='index.html' \
             --exclude='cases.html' \
             --exclude='resources.html' \
