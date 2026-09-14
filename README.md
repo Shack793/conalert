@@ -148,6 +148,9 @@ that the cPanel account has SSH, `rsync`, and `tar`. Change `DEPLOY_PATH` in
 the workflow if the domain uses another document root. Database migrations
 are intentionally manual; back up the database and run `db/migrate_v2.sql`
 from cPanel Terminal or phpMyAdmin after reviewing it.
+To restore the bundled blue/yellow logo after a custom branding upload, run
+`db/migration_v3_restore_bundled_branding.sql` once after backing up the
+database.
 
 ## 4. Configure the app
 
