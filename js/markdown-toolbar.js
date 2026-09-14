@@ -40,10 +40,12 @@ function attachMarkdownToolbar(textarea, opts = {}) {
     textarea.dispatchEvent(new Event('input'));
   }));
 
-  const hint = document.createElement('span');
-  hint.className = 'md-toolbar-hint';
-  hint.textContent = opts.hint || 'Leave a blank line between paragraphs. Links are clickable automatically.';
-  toolbar.appendChild(hint);
+  if (opts.hint !== false) {
+    const hint = document.createElement('span');
+    hint.className = 'md-toolbar-hint';
+    hint.textContent = opts.hint || 'Leave a blank line between paragraphs. Links are clickable automatically.';
+    toolbar.appendChild(hint);
+  }
 
   textarea.parentNode.insertBefore(toolbar, textarea);
 }
