@@ -63,13 +63,37 @@ $favicon = htmlspecialchars(get_setting('favicon_path'), ENT_QUOTES, 'UTF-8');
 
       <div class="field-row">
         <div class="field">
-          <label class="field-label" for="amount_usd">Amount frozen / lost (USD equivalent)</label>
-          <input type="number" id="amount_usd" name="amount_usd" min="0" step="0.01">
+          <label class="field-label" for="amount_original">Amount frozen / lost</label>
+          <input type="number" id="amount_original" name="amount_original" min="0" step="any">
+          <div class="field-hint">In the original currency, e.g. 0.75 for 0.75 BTC.</div>
         </div>
         <div class="field">
           <label class="field-label" for="currency_lost">Original currency</label>
-          <input type="text" id="currency_lost" name="currency_lost">
+          <input type="text" id="currency_lost" name="currency_lost" list="currency-options" maxlength="20">
+          <datalist id="currency-options">
+            <option value="USD"></option>
+            <option value="EUR"></option>
+            <option value="GBP"></option>
+            <option value="CAD"></option>
+            <option value="AUD"></option>
+            <option value="BTC"></option>
+            <option value="ETH"></option>
+            <option value="USDT"></option>
+            <option value="USDC"></option>
+            <option value="SOL"></option>
+            <option value="LTC"></option>
+            <option value="XRP"></option>
+            <option value="TRX"></option>
+            <option value="DOGE"></option>
+            <option value="BNB"></option>
+          </datalist>
+          <div class="field-hint">Pick one or type your own.</div>
         </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="amount_usd">USD value at the time (if known)</label>
+        <input type="number" id="amount_usd" name="amount_usd" min="0" step="0.01">
       </div>
 
       <div class="field">

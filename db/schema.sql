@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS cases (
   platform_name       VARCHAR(200) NOT NULL,
   platform_type       ENUM('casino','exchange','other') NOT NULL,
   amount_usd          DECIMAL(14,2) NULL,
+  amount_original     DECIMAL(30,8) NULL, -- amount in currency_lost (e.g. 0.75 BTC); exact, never converted
   currency_lost       VARCHAR(20) NULL,
   incident_date       VARCHAR(20) NULL,
   description         TEXT NOT NULL,

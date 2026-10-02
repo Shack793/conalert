@@ -14,6 +14,24 @@ function formatUSD(n) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 }
 
+// Original-currency amount (fiat or crypto), e.g. "0.75 BTC". Shown exactly
+// as reported — never converted, since crypto prices move.
+function formatOriginal(amount, currency) {
+  if (amount === null || amount === undefined || amount === '') return '';
+  const n = new Intl.NumberFormat('en-US', { maximumFractionDigits: 8 }).format(Number(amount));
+  return currency ? `${n} ${currency}` : n;
+}
+
+// Original amount first when we have it, with the USD value at report time.
+function formatAmount(c) {
+  const original = formatOriginal(c.amount_original, c.currency_lost);
+  if (!original) return formatUSD(c.amount_usd);
+  const isUsd = (c.currency_lost || '').toUpperCase() === 'USD';
+  return isUsd || c.amount_usd === null || c.amount_usd === undefined
+    ? original
+    : `${original} (≈ ${formatUSD(c.amount_usd)})`;
+}
+
 function esc(str) {
   const div = document.createElement('div');
   div.textContent = str ?? '';
@@ -79,7 +97,7 @@ function renderRows() {
       <td>${new Date(c.created_at).toLocaleDateString()}</td>
       <td>${esc(c.platform_name)}</td>
       <td>${esc(c.platform_type)}</td>
-      <td>${formatUSD(c.amount_usd)}</td>
+      <td>${esc(formatAmount(c))}</td>
       <td>${esc(c.full_name)}</td>
       <td><span class="status-pill">${c.status}</span></td>
       <td>${c.priority}</td>
@@ -109,13 +127,20 @@ async function openDrawer(id) {
   document.getElementById('drawer-readonly').innerHTML = `
     <p><strong>Internal ID:</strong> ${c.id}</p>
     <p><strong>Reporter:</strong> ${esc(c.full_name)} — ${esc(c.email)}${c.country ? ' · ' + esc(c.country) : ''}</p>
-    <p><strong>Amount:</strong> ${formatUSD(c.amount_usd)} ${esc(c.currency_lost || '')} &nbsp;
+    <p><strong>Amount:</strong> ${c.amount_original !== null && c.amount_original !== undefined
+         ? esc(formatAmount(c))
+         : `${formatUSD(c.amount_usd)} ${esc(c.currency_lost || '')}`} &nbsp;
        <strong>Incident date:</strong> ${esc(c.incident_date || 'not given')}</p>
     <p><strong>Consent to publish:</strong> ${Number(c.consent_to_publish) ? 'yes' : 'no'}</p>
     <p><strong>Description:</strong><br>${linkifyEscaped(esc(c.description))}</p>
     <p><strong>Evidence links:</strong><br>${linkifyEscaped(esc(c.evidence_links || 'none provided'))}</p>
   `;
   document.getElementById('drawer-case-number').value = c.case_number || c.id;
+  document.getElementById('drawer-amount-original').value =
+    c.amount_original !== null && c.amount_original !== undefined ? String(Number(c.amount_original)) : '';
+  document.getElementById('drawer-currency').value = c.currency_lost || '';
+  document.getElementById('drawer-amount-usd').value =
+    c.amount_usd !== null && c.amount_usd !== undefined ? String(Number(c.amount_usd)) : '';
   document.getElementById('drawer-status').value = c.status;
   document.getElementById('drawer-priority').value = c.priority;
   document.getElementById('drawer-summary').value = c.public_summary || '';
@@ -138,6 +163,9 @@ document.getElementById('drawer-save').addEventListener('click', async () => {
   const msg = document.getElementById('drawer-message');
   const payload = {
     case_number: document.getElementById('drawer-case-number').value,
+    amount_original: document.getElementById('drawer-amount-original').value,
+    currency_lost: document.getElementById('drawer-currency').value,
+    amount_usd: document.getElementById('drawer-amount-usd').value,
     status: document.getElementById('drawer-status').value,
     priority: document.getElementById('drawer-priority').value,
     public_summary: document.getElementById('drawer-summary').value,

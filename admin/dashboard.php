@@ -80,6 +80,22 @@ $token = csrf_token();
   <label for="drawer-case-number">Case number (shown publicly on the case wall)</label>
   <input type="text" id="drawer-case-number" maxlength="50">
 
+  <label for="drawer-amount-original">Amount in original currency (shown publicly)</label>
+  <input type="number" id="drawer-amount-original" min="0" step="any">
+
+  <label for="drawer-currency">Original currency (e.g. USD, BTC, ETH, USDT)</label>
+  <input type="text" id="drawer-currency" maxlength="20" list="drawer-currency-options">
+  <datalist id="drawer-currency-options">
+    <option value="USD"></option><option value="EUR"></option><option value="GBP"></option>
+    <option value="CAD"></option><option value="AUD"></option><option value="BTC"></option>
+    <option value="ETH"></option><option value="USDT"></option><option value="USDC"></option>
+    <option value="SOL"></option><option value="LTC"></option><option value="XRP"></option>
+    <option value="TRX"></option><option value="DOGE"></option><option value="BNB"></option>
+  </datalist>
+
+  <label for="drawer-amount-usd">USD value at time of report (used for homepage total)</label>
+  <input type="number" id="drawer-amount-usd" min="0" step="0.01">
+
   <label for="drawer-status">Status</label>
   <select id="drawer-status">
     <option value="new">new</option>

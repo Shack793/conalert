@@ -8,6 +8,23 @@ function formatUSD(n) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 }
 
+// Original-currency amount (fiat or crypto), e.g. "0.75 BTC". Shown exactly
+// as reported — never converted, since crypto prices move.
+function formatOriginal(amount, currency) {
+  const n = new Intl.NumberFormat('en-US', { maximumFractionDigits: 8 }).format(Number(amount));
+  return currency ? `${n} ${currency}` : n;
+}
+
+function formatAmount(c) {
+  if (c.amount_original === null || c.amount_original === undefined) {
+    return formatUSD(c.amount_usd) + (c.currency_lost ? ' &middot; ' + escapeHtml(c.currency_lost) : '');
+  }
+  const original = escapeHtml(formatOriginal(c.amount_original, c.currency_lost));
+  const isUsd = (c.currency_lost || '').toUpperCase() === 'USD';
+  if (isUsd || c.amount_usd === null || c.amount_usd === undefined) return original;
+  return `${original} <span class="case-amount-usd">(≈ ${formatUSD(c.amount_usd)} when reported)</span>`;
+}
+
 function formatDate(iso) {
   if (!iso) return 'date not given';
   return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -34,7 +51,7 @@ function render() {
       <span class="badge ${badgeClass(c.platform_type)}">${c.platform_type}</span>
       <h3>${escapeHtml(c.platform_name)}</h3>
       <div class="case-meta">
-        <span class="case-amount">${formatUSD(c.amount_usd)}${c.currency_lost ? ' &middot; ' + escapeHtml(c.currency_lost) : ''}</span>
+        <span class="case-amount">${formatAmount(c)}</span>
         <span>${formatDate(c.incident_date)}</span>
         ${c.country ? `<span>${escapeHtml(c.country)}</span>` : ''}
       </div>

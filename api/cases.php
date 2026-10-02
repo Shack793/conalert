@@ -15,7 +15,7 @@ if ($method === 'GET') {
 function list_cases(): void {
     $pdo = get_db();
     $sql = "SELECT id, case_number, created_at, country, platform_name, platform_type,
-                   amount_usd, currency_lost, incident_date, public_summary
+                   amount_usd, amount_original, currency_lost, incident_date, public_summary
             FROM cases
             WHERE status = 'published' AND consent_to_publish = 1";
     $params = [];
@@ -90,6 +90,28 @@ function submit_case(): void {
         $amount = (float)$body['amount_usd'];
     }
 
+    // Amount in the reporter's original currency (fiat or crypto), stored
+    // exactly as given so volatile crypto amounts stay accurate.
+    $amountOriginal = null;
+    if (isset($body['amount_original']) && $body['amount_original'] !== '') {
+        if (!is_numeric($body['amount_original']) || (float)$body['amount_original'] < 0
+            || (float)$body['amount_original'] >= 1e15) {
+            json_response(400, ['error' => 'amount_original must be a positive number.']);
+        }
+        $amountOriginal = number_format((float)$body['amount_original'], 8, '.', '');
+    }
+    $currency = str_or_null($body['currency_lost'] ?? null, 20);
+    if ($currency !== null) {
+        $currency = mb_strtoupper($currency);
+    }
+    if ($amountOriginal !== null && $currency === null) {
+        json_response(400, ['error' => 'Please tell us which currency that amount is in.']);
+    }
+    // A USD amount needs no conversion — fill in the USD value automatically.
+    if ($amount === null && $amountOriginal !== null && $currency === 'USD') {
+        $amount = (float)$amountOriginal;
+    }
+
     $pdo = get_db();
 
     // Lightweight abuse guard: cap repeat submissions from the same email.
@@ -105,13 +127,13 @@ function submit_case(): void {
         INSERT INTO cases (
             status, priority,
             full_name, email, country,
-            platform_name, platform_type, amount_usd, currency_lost, incident_date,
+            platform_name, platform_type, amount_usd, amount_original, currency_lost, incident_date,
             description, evidence_links,
             consent_to_publish, honeypot_tripped
         ) VALUES (
             ?, 'normal',
             ?, ?, ?,
-            ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?,
             ?, ?,
             ?, ?
         )
@@ -124,7 +146,8 @@ function submit_case(): void {
         require_str($body['platform_name'], 200),
         $body['platform_type'],
         $amount,
-        str_or_null($body['currency_lost'] ?? null, 20),
+        $amountOriginal,
+        $currency,
         str_or_null($body['incident_date'] ?? null, 20),
         require_str($body['description'], 8000),
         str_or_null($body['evidence_links'] ?? null, 4000),

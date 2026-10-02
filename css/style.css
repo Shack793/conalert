@@ -499,3 +499,4 @@ img, svg { max-width: 100%; }
   .ledger-strip { flex-direction: column; gap: 14px; }
   .field-row { gap: 12px; }
 }
+.case-amount-usd { font-size: 0.8rem; color: var(--ink-soft); }

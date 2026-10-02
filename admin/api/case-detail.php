@@ -96,6 +96,45 @@ function patch_case(PDO $pdo, int $id, array $admin): void {
         $events[] = ['summary_edited', 'Public summary updated'];
     }
 
+    // Amounts: blank clears the field. Only fields that actually changed are
+    // written, so saving other edits never touches the amounts.
+    $amountFields = [
+        'amount_original' => ['label' => 'Original amount', 'max' => 1e15, 'decimals' => 8],
+        'amount_usd'      => ['label' => 'USD value',       'max' => 1e12, 'decimals' => 2],
+    ];
+    foreach ($amountFields as $field => $cfg) {
+        if (!array_key_exists($field, $body)) {
+            continue;
+        }
+        $raw = trim((string)($body[$field] ?? ''));
+        $value = null;
+        if ($raw !== '') {
+            if (!is_numeric($raw) || (float)$raw < 0 || (float)$raw >= $cfg['max']) {
+                json_response(400, ['error' => $cfg['label'] . ' must be a positive number.']);
+            }
+            $value = number_format((float)$raw, $cfg['decimals'], '.', '');
+        }
+        $old = $existing[$field] === null ? null : number_format((float)$existing[$field], $cfg['decimals'], '.', '');
+        if ($value !== $old) {
+            $sets[] = $field . ' = ?';
+            $params[] = $value;
+            $pretty = fn($v) => $v === null ? 'none' : rtrim(rtrim($v, '0'), '.');
+            $events[] = ['amount_changed', $cfg['label'] . ': ' . $pretty($old) . ' -> ' . $pretty($value)];
+        }
+    }
+
+    if (array_key_exists('currency_lost', $body)) {
+        $currency = str_or_null((string)($body['currency_lost'] ?? ''), 20);
+        if ($currency !== null) {
+            $currency = mb_strtoupper($currency);
+        }
+        if ($currency !== $existing['currency_lost']) {
+            $sets[] = 'currency_lost = ?';
+            $params[] = $currency;
+            $events[] = ['amount_changed', 'Currency: ' . ($existing['currency_lost'] ?? 'none') . ' -> ' . ($currency ?? 'none')];
+        }
+    }
+
     if (isset($body['admin_notes'])) {
         $sets[] = 'admin_notes = ?';
         $params[] = require_str($body['admin_notes'], 8000);

@@ -44,7 +44,7 @@ $favicon = htmlspecialchars(get_setting('favicon_path'), ENT_QUOTES, 'UTF-8');
         <span class="stat-label">total reported frozen</span>
       </div>
     </div>
-    <p class="ledger-note">Figures reflect cases submitted to ConAlert with the reporter's consent to publish. They are reported amounts, not independently audited totals.</p>
+    <p class="ledger-note">Figures reflect cases submitted to ConAlert with the reporter's consent to publish. They are reported amounts, not independently audited totals. The total uses each case's USD value at the time it was reported; crypto amounts are listed in their original currency on each case.</p>
 
     <div class="btn-row">
       <a class="btn btn-primary" href="/submit.php">Submit your case</a>
