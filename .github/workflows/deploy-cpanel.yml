@@ -66,6 +66,7 @@ jobs:
           backup="$2"
           app="$3"
 
+          mkdir -p "$app"
           mkdir -p "$HOME/deploy-backups/$backup"
           cp -a "$app"/. "$HOME/deploy-backups/$backup"/
           tar -xzf "$HOME/$release/conalert-release.tar.gz" -C "$HOME/$release"
@@ -86,7 +87,11 @@ jobs:
             --exclude='parking-page.shtml' \
             "$HOME/$release/" "$app/"
 
-          chmod 600 "$app/config.php"
+          if [ -f "$app/config.php" ]; then
+            chmod 600 "$app/config.php"
+          else
+            echo "NOTE: $app/config.php not found (first deploy?). Create it from config.example.php."
+          fi
           rm -rf "$HOME/$release"
           find "$HOME/deploy-backups" -mindepth 1 -maxdepth 1 -type d -mtime +14 -exec rm -rf {} +
           REMOTE
